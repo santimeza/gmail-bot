@@ -9,10 +9,6 @@ from datetime import datetime, timedelta, timezone
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 creds = None
 
-# Delete any existing token file to ensure fresh authentication
-if os.path.exists('token.json'):
-    os.remove('token.json')
-
 try:
     from google_auth_oauthlib.flow import InstalledAppFlow
     flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
