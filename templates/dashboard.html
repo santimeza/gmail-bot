@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Gmail Cleaner - Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
+    />
+    <style>
+      #console-log {
+        height: 300px; /* Set a fixed height */
+        overflow-y: auto; /* Enable vertical scrolling */
+        background: #222;
+        color: #00ff00;
+        padding: 10px;
+        font-family: monospace;
+        border-radius: 5px;
+        white-space: pre-line; /* Preserve line breaks */
+      }
+    </style>
+  </head>
+  <body class="section">
+    <div class="container">
+      <h1 class="title">📬 Gmail Cleaner Dashboard</h1>
+      <p>Welcome! You are now authenticated.</p></br>
+      <button id="run-bot" class="button is-primary" onclick="runBot()">
+        Run Bot
+      </button>
+
+      <div class="box mt-4">
+        <h2 class="subtitle">📜 Bot Log:</h2>
+        <div id="console-log" class="box is-family-monospace"></div>
+      </div>
+    </div>
+
+    <script>
+      function runBot() {
+        let button = document.getElementById("run-bot");
+        let logDiv = document.getElementById("console-log");
+
+        button.disabled = true;
+        appendLog("🔄 Bot is running...");
+
+        fetch("/run-bot")
+          .then((response) => response.text())
+          .then((data) => {
+            appendLog(data);
+            button.disabled = false;
+          })
+          .catch((error) => {
+            appendLog(`❌ Error: ${error}`);
+            button.disabled = false;
+          });
+      }
+
+      function appendLog(message) {
+        let logDiv = document.getElementById("console-log");
+        logDiv.innerHTML += `<p>${message}</p>`;
+        logDiv.scrollTop = logDiv.scrollHeight; // Auto-scroll to bottom
+      }
+    </script>
+  </body>
+</html>

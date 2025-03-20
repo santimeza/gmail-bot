@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request, session
+from flask import Flask, redirect, url_for, request, session, render_template
 import os
 import json
 import webbrowser
@@ -31,7 +31,7 @@ flow = Flow.from_client_secrets_file(
 @app.route("/")
 def home():
     """Landing page for manual bot control."""
-    return "<h1>📬 Gmail Cleaner</h1><p>Click <a href='/auth'>here</a> to authenticate.</p>"
+    return render_template("index.html")
 
 @app.route("/auth")
 def auth():
@@ -50,7 +50,15 @@ def callback():
     with open("token.json", "w") as token_file:
         token_file.write(creds.to_json())
 
-    return "<h1>✅ Authentication Successful!</h1><p>You can now close this window.</p><br><a href='/run-bot'>Run Bot</a>"
+    return redirect(url_for("dashboard"))
+
+@app.route("/dashboard")
+def dashboard():
+    """Post-authentication page with bot functionality."""
+    if not os.path.exists("token.json"):
+        return redirect(url_for("home"))  # Redirect to pre-auth page if not authenticated
+    
+    return render_template("dashboard.html")  # Full bot UI
 
 @app.route("/run-bot")
 def run_bot():
