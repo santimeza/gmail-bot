@@ -22,15 +22,39 @@
   <body class="section">
     <div class="container">
       <h1 class="title">📬 Gmail Cleaner Dashboard</h1>
-      <p>Welcome! You are now authenticated.</p></br>
-      <button id="run-bot" class="button is-primary" onclick="runBot()">
-        Run Bot
+      <p>Welcome! You are now authenticated. Clicking the set-up button creates the "Valid Sender" label in your gmail account. Add this label to any email from a sender you want the bot to ignore </p>
+      <p>Scroll down to set up the bot, then click the button to run the bot.</p></br>
+      <button class="button is-info" onclick="gmailSetUp()">
+        Set up
       </button>
 
       <div class="box mt-4">
         <h2 class="subtitle">📜 Bot Log:</h2>
         <div id="console-log" class="box is-family-monospace"></div>
       </div>
+            <button id="run-bot" class="button is-primary" onclick="runBot()">
+        Run Bot
+      </button>
+      </br>
+      <div class="box mt-4">
+        <h2 class="subtitle has-text-centered">⚙️ Bot Setup:</h2>
+        <div class="columns">
+          <div class="column">
+            <div class="card">
+              <p class="has-text-centered">1</p>
+            </div>
+          </div>
+          <div class="column">
+            <div class="card">
+              <p class="has-text-centered">2</p>
+            </div>
+          </div>
+          <div class="column">
+            <div class="card">
+              <p class="has-text-centered">3</p>
+            </div>
+          </div>
+        </div>
     </div>
 
     <script>
@@ -50,6 +74,19 @@
           .catch((error) => {
             appendLog(`❌ Error: ${error}`);
             button.disabled = false;
+          });
+      }
+
+      function gmailSetUp() {
+        let logDiv = document.getElementById("console-log");
+
+        fetch("/gmail-set-up")
+          .then((response) => response.text())
+          .then((data) => {
+            appendLog(data);
+          })
+          .catch((error) => {
+            appendLog(`❌ Error: ${error}`);
           });
       }
 

@@ -6,7 +6,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from bot_logic import run_gmail_cleaner
+from bot_logic import run_gmail_cleaner, get_or_create_valid_sender_label
 
 # ✅ Allow HTTP for OAuth during local development
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -64,6 +64,14 @@ def dashboard():
 def run_bot():
     result = run_gmail_cleaner()
     return f"<h1>Bot Execution:</h1><p>{result}</p>"
+
+@app.route("/gmail-set-up")
+def gmail_set_up():
+    """Create the 'Valid Sender' label in Gmail."""
+    result = get_or_create_valid_sender_label()
+    return result
+
+    
 
 
 if __name__ == "__main__":

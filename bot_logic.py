@@ -4,6 +4,8 @@ from googleapiclient.discovery import build
 from flask import redirect, url_for
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
+creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+
 CLIENT_SECRETS_FILE = "credentials.json"
 
 
@@ -12,7 +14,7 @@ def run_gmail_cleaner():
     if not os.path.exists("token.json"):
         return redirect(url_for("auth"))
 
-    creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+    #creds = Credentials.from_authorized_user_file("token.json", SCOPES)
     service = build('gmail', 'v1', credentials=creds)
 
     # Example: Delete emails older than 7 days from Promotions tab
@@ -40,6 +42,18 @@ def run_gmail_cleaner():
         
     return "<h1>✅ Emails detected!</h1>"
         
+        
     #print("{{len(messages)}} emails deleted.")
 
     #return "<h1>✅ Emails deleted successfully!</h1>"
+
+def get_or_create_valid_sender_label(service=build('gmail', 'v1', credentials=creds), user_id='me', label_name="Valid Sender"):
+    labels = service.users().labels().list(userId=user_id).execute()
+    for label in labels['labels']:
+        if label['name'].lower() == label_name.lower():
+            return f"Valid Sender label already exists. Label ID: {label['id']}"
+
+    # Create label if it doesn’t exist
+    label_body = {'name': label_name, 'labelListVisibility': 'labelShow', 'messageListVisibility': 'show'}
+    label = service.users().labels().create(userId=user_id, body=label_body).execute()
+    return "Valid Sender label created successfully!"
