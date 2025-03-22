@@ -57,3 +57,13 @@ def get_or_create_valid_sender_label(service=build('gmail', 'v1', credentials=cr
     label_body = {'name': label_name, 'labelListVisibility': 'labelShow', 'messageListVisibility': 'show'}
     label = service.users().labels().create(userId=user_id, body=label_body).execute()
     return "Valid Sender label created successfully!"
+
+# gets list of user labels. For use in the dashboard-- bot setup
+def get_labels(service=build('gmail', 'v1', credentials=creds), user_id='me'):
+    try:
+        results = service.users().labels().list(userId="me").execute()
+        labels = results.get("labels", [])
+        return labels  # Return full label objects, not just names
+    except Exception as e:
+        print(f"Error fetching labels: {e}")
+        return []

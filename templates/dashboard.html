@@ -40,9 +40,9 @@
         <h2 class="subtitle has-text-centered">⚙️ Bot Setup:</h2>
         <div class="columns">
           <div class="column">
-            <div class="card">
-              <p class="has-text-centered">1</p>
-            </div>
+            <form id="label-selection">
+              <div id="labels-container"></div>
+            </form>
           </div>
           <div class="column">
             <div class="card">
@@ -58,6 +58,41 @@
     </div>
 
     <script>
+        // Labels are passed as JSON from Flask
+      const labels = JSON.parse('{{ labels | tojson | safe }}');
+      const labelsContainer = document.getElementById("labels-container");
+
+      labels.forEach(label => {
+          let displayName = label.name;
+
+          // Skip "Trash" label
+          if (displayName.toLowerCase() === "trash") {
+              return;
+          }
+
+          // Extract the readable name for CATEGORY_ labels
+          if (displayName.startsWith("CATEGORY_")) {
+              displayName = displayName.replace("CATEGORY_", ""); // Remove prefix
+          }
+
+          // Create checkbox element
+          let fieldDiv = document.createElement("div");
+          fieldDiv.classList.add("field");
+
+          let checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.id = label.id;  // Use label ID as the identifier
+          checkbox.name = "labels";
+          checkbox.value = JSON.stringify(label);  // Store full label info
+
+          let labelTag = document.createElement("label");
+          labelTag.htmlFor = label.id;
+          labelTag.textContent = displayName; // Use the formatted name
+
+          fieldDiv.appendChild(checkbox);
+          fieldDiv.appendChild(labelTag);
+          labelsContainer.appendChild(fieldDiv);
+      });
       function runBot() {
         let button = document.getElementById("run-bot");
         let logDiv = document.getElementById("console-log");

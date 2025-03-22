@@ -6,7 +6,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from bot_logic import run_gmail_cleaner, get_or_create_valid_sender_label
+from bot_logic import run_gmail_cleaner, get_or_create_valid_sender_label, get_labels
 
 # ✅ Allow HTTP for OAuth during local development
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -58,7 +58,8 @@ def dashboard():
     if not os.path.exists("token.json"):
         return redirect(url_for("home"))  # Redirect to pre-auth page if not authenticated
     
-    return render_template("dashboard.html")  # Full bot UI
+    labels = get_labels()
+    return render_template("dashboard.html", labels=labels)  # Full bot UI
 
 @app.route("/run-bot")
 def run_bot():
