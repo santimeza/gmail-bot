@@ -22,9 +22,16 @@
   <body class="section">
     <div class="container">
       <h1 class="title">📬 Gmail Cleaner Dashboard</h1>
-      <p>Welcome! You are now authenticated. Clicking the set-up button creates the "Valid Sender" label in your gmail account. Add this label to any email from a sender you want the bot to ignore </p>
-      <p>Scroll down to set up the bot, then click the button to run the bot.</p></br>
-      <button class="button is-info" onclick="gmailSetUp()">
+      <p>
+        Welcome! You are now authenticated. Clicking the set-up button creates
+        the "Valid Sender" label in your Gmail account. Add this label to any
+        email from a sender you want the bot to ignore.
+      </p>
+      <p>
+        Scroll down to set up the bot, then click the button to run the bot.
+      </p>
+      <br />
+      <button id="gmail-set-up" class="button is-info" onclick="gmailSetUp()">
         Set up
       </button>
 
@@ -32,17 +39,19 @@
         <h2 class="subtitle">📜 Bot Log:</h2>
         <div id="console-log" class="box is-family-monospace"></div>
       </div>
-            <button id="run-bot" class="button is-primary" onclick="runBot()">
+
+      <button id="run-bot" class="button is-primary" onclick="runBot()">
         Run Bot
       </button>
-      </br>
+      <br />
+
       <div class="box mt-4">
         <h2 class="subtitle has-text-centered">⚙️ Bot Setup:</h2>
         <div class="columns">
           <div class="column">
-            <form id="label-selection">
+            <label class="checkbox" id="label-selection">
               <div id="labels-container"></div>
-            </form>
+            </label>
           </div>
           <div class="column">
             <div class="card">
@@ -55,81 +64,9 @@
             </div>
           </div>
         </div>
+      </div>
     </div>
 
-    <script>
-        // Labels are passed as JSON from Flask
-      const labels = JSON.parse('{{ labels | tojson | safe }}');
-      const labelsContainer = document.getElementById("labels-container");
-
-      labels.forEach(label => {
-          let displayName = label.name;
-
-          // Skip "Trash" label
-          if (displayName.toLowerCase() === "trash") {
-              return;
-          }
-
-          // Extract the readable name for CATEGORY_ labels
-          if (displayName.startsWith("CATEGORY_")) {
-              displayName = displayName.replace("CATEGORY_", ""); // Remove prefix
-          }
-
-          // Create checkbox element
-          let fieldDiv = document.createElement("div");
-          fieldDiv.classList.add("field");
-
-          let checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.id = label.id;  // Use label ID as the identifier
-          checkbox.name = "labels";
-          checkbox.value = JSON.stringify(label);  // Store full label info
-
-          let labelTag = document.createElement("label");
-          labelTag.htmlFor = label.id;
-          labelTag.textContent = displayName; // Use the formatted name
-
-          fieldDiv.appendChild(checkbox);
-          fieldDiv.appendChild(labelTag);
-          labelsContainer.appendChild(fieldDiv);
-      });
-      function runBot() {
-        let button = document.getElementById("run-bot");
-        let logDiv = document.getElementById("console-log");
-
-        button.disabled = true;
-        appendLog("🔄 Bot is running...");
-
-        fetch("/run-bot")
-          .then((response) => response.text())
-          .then((data) => {
-            appendLog(data);
-            button.disabled = false;
-          })
-          .catch((error) => {
-            appendLog(`❌ Error: ${error}`);
-            button.disabled = false;
-          });
-      }
-
-      function gmailSetUp() {
-        let logDiv = document.getElementById("console-log");
-
-        fetch("/gmail-set-up")
-          .then((response) => response.text())
-          .then((data) => {
-            appendLog(data);
-          })
-          .catch((error) => {
-            appendLog(`❌ Error: ${error}`);
-          });
-      }
-
-      function appendLog(message) {
-        let logDiv = document.getElementById("console-log");
-        logDiv.innerHTML += `<p>${message}</p>`;
-        logDiv.scrollTop = logDiv.scrollHeight; // Auto-scroll to bottom
-      }
-    </script>
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
   </body>
 </html>

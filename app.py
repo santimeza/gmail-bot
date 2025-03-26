@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request, session, render_template
+from flask import Flask, redirect, url_for, request, session, render_template, jsonify
 import os
 import json
 import webbrowser
@@ -58,8 +58,13 @@ def dashboard():
     if not os.path.exists("token.json"):
         return redirect(url_for("home"))  # Redirect to pre-auth page if not authenticated
     
-    labels = get_labels()
-    return render_template("dashboard.html", labels=labels)  # Full bot UI
+    return render_template("dashboard.html")
+
+@app.route("/fetch-labels")
+def fetch_labels():
+    """Get list of user labels."""
+    labels = get_labels()   #sends only the label names
+    return jsonify(labels)
 
 @app.route("/run-bot")
 def run_bot():

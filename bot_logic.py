@@ -58,12 +58,22 @@ def get_or_create_valid_sender_label(service=build('gmail', 'v1', credentials=cr
     label = service.users().labels().create(userId=user_id, body=label_body).execute()
     return "Valid Sender label created successfully!"
 
-# gets list of user labels. For use in the dashboard-- bot setup
+# Gets list of user labels. For use in the dashboard-- bot setup
 def get_labels(service=build('gmail', 'v1', credentials=creds), user_id='me'):
     try:
-        results = service.users().labels().list(userId="me").execute()
+        results = service.users().labels().list(userId=user_id).execute()
         labels = results.get("labels", [])
-        return labels  # Return full label objects, not just names
+
+        # Extract only the names and clean up CATEGORY_ prefixes
+        label_names = [
+            label["name"].replace("CATEGORY_", "")  # Remove "CATEGORY_" prefix
+            for label in labels
+            if label["name"].lower() != "trash"  # Skip "Trash" label
+        ]
+
+        print('Processed labels:', label_names)  # Debugging
+        return label_names  # Return only the cleaned label names
+
     except Exception as e:
         print(f"Error fetching labels: {e}")
         return []
