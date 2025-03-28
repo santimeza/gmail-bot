@@ -2,6 +2,8 @@ import os
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from flask import redirect, url_for
+from datetime import datetime, timedelta, timezone
+
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 creds = Credentials.from_authorized_user_file("token.json", SCOPES)
@@ -19,29 +21,33 @@ def run_gmail_cleaner(labels):
 
     # Example: Delete emails older than 7 days from Promotions tab
     days_old = 7
-
-    from datetime import datetime, timedelta, timezone
     date_limit = (datetime.now(timezone.utc) - timedelta(days=days_old)).strftime('%Y/%m/%d')
-    query = f'label:personal before:{date_limit}'
+    no_messages = 0
 
-    results = service.users().messages().list(userId='me', q=query).execute()
-    messages = results.get('messages', [])
+    for label in labels:
+        query = f'label:{label} before:{date_limit}'
 
-    if not messages:
-        print("No emails found.")
-        return "<h1>No emails found.</h1>"
+        results = service.users().messages().list(userId='me', q=query).execute()
+        messages = results.get('messages', [])
 
-    print(f"{len(messages)} emails detected.")
-    print(f"Date limit {date_limit}")
-    for msg in messages:
-        #service.users().messages().trash(userId='me', id=msg['id']).execute()
-        msg_data = service.users().messages().get(userId='me', id=msg['id']).execute()
-        headers = msg_data.get('payload', {}).get('headers', [])
-        subject = next((header['value'] for header in headers if header['name'] == 'Subject'), "No Subject")
-        print(f"email with Subject: {subject}")
+        if not messages:
+            print("No emails found in: ", label)
+            no_messages += 1
+            continue
+
+        print(f"{len(messages)} emails detected in {label}.")
+        print(f"Date limit {date_limit}")
+        for msg in messages:
+            #service.users().messages().trash(userId='me', id=msg['id']).execute()
+            msg_data = service.users().messages().get(userId='me', id=msg['id']).execute()
+            headers = msg_data.get('payload', {}).get('headers', [])
+            subject = next((header['value'] for header in headers if header['name'] == 'Subject'), "No Subject")
+            print(f"email with Subject: {subject}")
     
     print(labels)
-    return "<h1>✅ Emails detected!</h1>"
+    if no_messages == len(labels):
+        return "<h1>❌ No emails found!</h1><h1> ---------------------------------- </h1>"
+    return "<h1>✅ Emails detected!</h1><h1> ---------------------------------- </h1>"
         
         
     #print("{{len(messages)}} emails deleted.")
