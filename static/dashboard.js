@@ -34,7 +34,6 @@ function runBot() {
   let logDiv = document.getElementById("console-log");
 
   button.disabled = true;
-  appendLog("🔄 Bot is running...");
 
   // Collect selected labels
   let selectedLabels = [];
@@ -47,18 +46,26 @@ function runBot() {
     });
 
   appendLog("Selected Labels: " + labelStr);
+  appendLog("🔄 Bot is running...");
+
   console.log("Selected Labels:", selectedLabels); // Debugging
 
   fetch("/run-bot", {
-    method: "GET",
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ labels: selectedLabels }),
   })
-    .then((response) => response.text())
+    .then((response) => response.json()) // Convert response to JSON
     .then((data) => {
-      appendLog(data);
+      if (data.message) {
+        appendLog(data.message); // Extract and display the message
+      } else if (data.error) {
+        appendLog(`❌ Error: ${data.error}`); // Handle errors
+      }
       button.disabled = false;
     })
     .catch((error) => {
-      appendLog(`❌ Error: ${error}`);
+      appendLog(`❌ Fetch error: ${error}`);
       button.disabled = false;
     });
 }

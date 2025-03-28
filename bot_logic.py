@@ -9,7 +9,7 @@ creds = Credentials.from_authorized_user_file("token.json", SCOPES)
 CLIENT_SECRETS_FILE = "credentials.json"
 
 
-def run_gmail_cleaner():
+def run_gmail_cleaner(labels):
     """Runs the Gmail cleaner bot after authentication."""
     if not os.path.exists("token.json"):
         return redirect(url_for("auth"))
@@ -39,7 +39,8 @@ def run_gmail_cleaner():
         headers = msg_data.get('payload', {}).get('headers', [])
         subject = next((header['value'] for header in headers if header['name'] == 'Subject'), "No Subject")
         print(f"email with Subject: {subject}")
-        
+    
+    print(labels)
     return "<h1>✅ Emails detected!</h1>"
         
         

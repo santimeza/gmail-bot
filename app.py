@@ -66,10 +66,18 @@ def fetch_labels():
     labels = get_labels()   #sends only the label names
     return jsonify(labels)
 
-@app.route("/run-bot")
+@app.route("/run-bot", methods=["POST"])
 def run_bot():
-    result = run_gmail_cleaner()
-    return f"<h1>Bot Execution:</h1><p>{result}</p>"
+    try:
+        data = request.json  # Extract JSON data from request
+        selected_labels = data.get("labels", [])  # Get selected labels
+
+        # Call the Gmail cleaner function with selected labels
+        result = run_gmail_cleaner(selected_labels)
+
+        return jsonify({"message": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/gmail-set-up")
 def gmail_set_up():
