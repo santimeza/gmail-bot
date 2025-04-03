@@ -6,6 +6,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from werkzeug.serving import is_running_from_reloader
 from bot_logic import run_gmail_cleaner, get_or_create_valid_sender_label, get_labels
 
 # ✅ Allow HTTP for OAuth during local development
@@ -27,6 +28,27 @@ flow = Flow.from_client_secrets_file(
     scopes=SCOPES,
     redirect_uri="http://localhost:5000/callback"
 )
+
+def get_credentials():
+    """Get user credentials from token.json."""
+    creds = None
+    if os.path.exists("token.json"):
+        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+    if not creds or not creds.valid:
+        # If no valid credentials, initiate OAuth flow
+        flow = Flow.from_client_secrets_file(
+            CLIENT_SECRETS_FILE,
+            scopes=SCOPES,
+            redirect_uri="http://localhost:5000/callback"
+        )
+        auth_url, state = flow.authorization_url(prompt="consent")
+        session["state"] = state
+        
+        return redirect(auth_url)
+    return creds
+
 
 @app.route("/")
 def home():
@@ -89,5 +111,6 @@ def gmail_set_up():
 
 
 if __name__ == "__main__":
-    webbrowser.open("http://localhost:5000")  # Open UI automatically
+    if not is_running_from_reloader():
+        webbrowser.open("http://localhost:5000")  # Open UI automatically
     app.run(port=5000, debug=True)
