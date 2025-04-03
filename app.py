@@ -7,7 +7,7 @@ from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from werkzeug.serving import is_running_from_reloader
-from bot_logic import run_gmail_cleaner, get_or_create_valid_sender_label, get_labels
+from bot_logic import run_gmail_cleaner, create_important_address_label, get_labels
 
 # ✅ Allow HTTP for OAuth during local development
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -103,8 +103,8 @@ def run_bot():
 
 @app.route("/gmail-set-up")
 def gmail_set_up():
-    """Create the 'Valid Sender' label in Gmail."""
-    result = get_or_create_valid_sender_label()
+    """Create the 'Important address' label in Gmail."""
+    result = create_important_address_label()
     return result
 
     

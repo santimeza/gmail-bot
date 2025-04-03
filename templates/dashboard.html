@@ -24,12 +24,19 @@
       <h1 class="title">📬 Gmail Cleaner Dashboard</h1>
       <p>
         Welcome! You are now authenticated. Clicking the set-up button creates
-        the "Valid Sender" label in your Gmail account. Add this label to any
-        email from a sender you want the bot to ignore.
+        the "Important Address" label in your Gmail account. Add this label to
+        any email from a sender you want the cleaner to ignore. The cleaner will
+        also ignore any email flagged as important by Gmail.
       </p>
+      <br />
       <p>
-        Scroll down to set up the bot, then click the button to run the bot.
+        Scroll down to set up the bot, select the labels/categories you want to
+        clean on the left, and specify the age of the emails you want to delete
+        on the right. You can set a date range or specify a number of days old.
+        If you want to delete all emails, check the "No Date Restriction" box.
       </p>
+      <br />
+      <p>When you are all set, click the button to run the bot.</p>
       <br />
       <button id="gmail-set-up" class="button is-info" onclick="gmailSetUp()">
         Set up
@@ -46,7 +53,8 @@
       <br />
 
       <div class="box mt-4">
-        <h2 class="subtitle has-text-centered">⚙️ Bot Setup:</h2>
+        <h3 class="title has-text-centered">⚙️ Parameter Setup:</h3>
+        <hr class="has-background-grey my-4" />
         <div class="columns">
           <div class="column">
             <label class="checkbox" id="label-selection">
@@ -54,13 +62,41 @@
             </label>
           </div>
           <div class="column">
-            <div class="card">
-              <p class="has-text-centered">2</p>
+            <div class="field">
+              <label class="label">Days Old</label>
+              <div class="control">
+                <input
+                  id="days-old"
+                  class="input"
+                  type="number"
+                  placeholder="Enter days old"
+                  min="0"
+                  oninput="updateDateFromDays()"
+                />
+              </div>
             </div>
-          </div>
-          <div class="column">
-            <div class="card">
-              <p class="has-text-centered">3</p>
+
+            <div class="field">
+              <label class="label">Before Date</label>
+              <div class="control">
+                <input
+                  id="before-date"
+                  class="input"
+                  type="date"
+                  oninput="updateDaysFromDate()"
+                />
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="checkbox">
+                <input
+                  id="no-date-restriction"
+                  type="checkbox"
+                  onclick="toggleDateRestriction()"
+                />
+                No Date Restriction
+              </label>
             </div>
           </div>
         </div>
