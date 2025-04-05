@@ -60,7 +60,10 @@ function runBot() {
       labelStr += checkbox.id + "   ";
     });
 
+  const beforeDate = document.getElementById("before-date").value; // only need this one for the query
+
   appendLog("Selected Labels: " + labelStr);
+  appendLog("Before Date: " + beforeDate);
   appendLog("🔄 Bot is running...");
 
   console.log("Selected Labels:", selectedLabels); // Debugging
@@ -68,7 +71,7 @@ function runBot() {
   fetch("/run-bot", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ labels: selectedLabels }),
+    body: JSON.stringify({ labels: selectedLabels, beforeDate: beforeDate }), // Send selected labels and before date
   })
     .then((response) => response.json()) // Convert response to JSON
     .then((data) => {

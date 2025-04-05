@@ -92,10 +92,11 @@ def fetch_labels():
 def run_bot():
     try:
         data = request.json  # Extract JSON data from request
-        selected_labels = data.get("labels", [])  # Get selected labels
+        selected_labels = data.get("labels", [])  # extract selected labels
+        before_date = data.get("beforeDate")  # extract before date
 
         # Call the Gmail cleaner function with selected labels
-        result = run_gmail_cleaner(selected_labels)
+        result = run_gmail_cleaner(selected_labels, before_date)
 
         return jsonify({"message": result})
     except Exception as e:

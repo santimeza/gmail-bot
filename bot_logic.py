@@ -13,7 +13,7 @@ CLIENT_SECRETS_FILE = "credentials.json"
 
 
 
-def run_gmail_cleaner(labels):
+def run_gmail_cleaner(labels, before_date):
     """Runs the Gmail cleaner bot after authentication."""
     if not os.path.exists("token.json"):
         return redirect(url_for("auth"))
@@ -28,8 +28,8 @@ def run_gmail_cleaner(labels):
         print(address)
 
     # Example: Delete emails older than 7 days from Promotions tab
-    days_old = 7
-    date_limit = (datetime.now(timezone.utc) - timedelta(days=days_old)).strftime('%Y/%m/%d')
+    print(before_date)
+    date_limit = before_date     #before_date.strftime("%Y/%m/%d")
     no_messages = 0
 
     for label in labels:
