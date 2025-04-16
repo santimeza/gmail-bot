@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request, session, render_template, jsonify
+from flask import Flask, redirect, url_for, send_file, request, session, render_template, jsonify
 import os
 import json
 import webbrowser
@@ -6,6 +6,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from datetime import datetime
 from werkzeug.serving import is_running_from_reloader
 from bot_logic import run_gmail_cleaner, create_important_address_label, get_labels
 
@@ -17,6 +18,7 @@ app.secret_key = "your_secret_key_here"  # Change this to a secure random key
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 CLIENT_SECRETS_FILE = "credentials.json"
+LOG_FILE_PATH = "gmail_cleaner_log.txt"
 
 # Ensure fresh authentication each run
 # if os.path.exists('token.json'):
@@ -79,7 +81,11 @@ def dashboard():
     """Post-authentication page with bot functionality."""
     if not os.path.exists("token.json"):
         return redirect(url_for("home"))  # Redirect to pre-auth page if not authenticated
-    
+
+    # Clear the log file when visiting the dashboard
+    with open(LOG_FILE_PATH, "w", encoding="utf-8") as log_file:
+        log_file.write("")  # Clear the log file
+
     return render_template("dashboard.html")
 
 @app.route("/fetch-labels")
@@ -108,7 +114,15 @@ def gmail_set_up():
     result = create_important_address_label()
     return result
 
-    
+@app.route("/download-log", methods=["GET"])
+def download_log():
+    """Serves the log file for download."""
+    try:
+        current_date = datetime.now().strftime("%m-%d-%Y")  # Format: MM-DD-YYYY
+        filename = f"cleaner_log_{current_date}.txt"
+        return send_file(LOG_FILE_PATH, as_attachment=True, download_name=filename, mimetype="text/plain")
+    except Exception as e:
+        return f"Error: {e}", 500
 
 
 if __name__ == "__main__":

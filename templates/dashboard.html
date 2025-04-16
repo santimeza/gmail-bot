@@ -50,6 +50,9 @@
       <button id="run-bot" class="button is-primary" onclick="runBot()">
         Run Bot
       </button>
+      <button id="download-log" class="button is-link" onclick="downloadLog()">
+        Download Log
+      </button>
       <br />
 
       <div class="box mt-4">
@@ -71,6 +74,7 @@
                   type="number"
                   placeholder="Enter days old"
                   min="0"
+                  value="0"
                   oninput="updateDateFromDays()"
                 />
               </div>
@@ -87,6 +91,18 @@
                 />
               </div>
             </div>
+            <script>
+              document.addEventListener("DOMContentLoaded", () => {
+                const beforeDateInput = document.getElementById("before-date");
+                if (beforeDateInput) {
+                  const today = new Date().toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
+                  beforeDateInput.value = today; // Set the value of the input field
+                }
+              });
+              function downloadLog() {
+                window.location.href = "/download-log";
+              }
+            </script>
 
             <div class="field">
               <label class="checkbox">

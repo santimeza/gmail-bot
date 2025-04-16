@@ -8,59 +8,54 @@ import re
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+LOG_FILE_PATH = "gmail_cleaner_log.txt"
 
 CLIENT_SECRETS_FILE = "credentials.json"
-
-
 
 def run_gmail_cleaner(labels, before_date):
     """Runs the Gmail cleaner bot after authentication."""
     if not os.path.exists("token.json"):
         return redirect(url_for("auth"))
+    
+    if not labels:
+        return "<h1>❌ Please select labels and/or categories for the cleaner.</h1>"
 
-    #creds = Credentials.from_authorized_user_file("token.json", SCOPES)
     service = build('gmail', 'v1', credentials=creds)
-
-    # make important address list
     ia_list = get_important_addresses(service=service, user_id='me', label_name="Important address")
-    print("Important address list created.")
-    for address in ia_list:
-        print(address)
-
-    # Example: Delete emails older than 7 days from Promotions tab
-    print(before_date)
-    date_limit = before_date     #before_date.strftime("%Y/%m/%d")
-    no_messages = 0
+    deleted_emails = {}
+    skipped_emails = {}
 
     for label in labels:
-        query = f'label:{label} before:{date_limit}'
-
+        query = f'label:{label} before:{before_date} -is:important'
         results = service.users().messages().list(userId='me', q=query).execute()
         messages = results.get('messages', [])
 
+        deleted_emails[label] = []
+        skipped_emails[label] = []
+
         if not messages:
-            print("No emails found in: ", label)
-            no_messages += 1
             continue
 
-        print(f"{len(messages)} emails detected in {label}.")
-        print(f"Date limit {date_limit}")
         for msg in messages:
-            #service.users().messages().trash(userId='me', id=msg['id']).execute()
             msg_data = service.users().messages().get(userId='me', id=msg['id']).execute()
             headers = msg_data.get('payload', {}).get('headers', [])
+            sender = next((header['value'] for header in headers if header['name'] == 'From'), None)
             subject = next((header['value'] for header in headers if header['name'] == 'Subject'), "No Subject")
-            print(f"email with Subject: {subject}")
-    
-    print(labels)
-    if no_messages == len(labels):
-        return "<h1>❌ No emails found!</h1><h1> ---------------------------------- </h1>"
-    return "<h1>✅ Emails detected!</h1><h1> ---------------------------------- </h1>"
-        
-        
-    #print("{{len(messages)}} emails deleted.")
 
-    #return "<h1>✅ Emails deleted successfully!</h1>"
+            if sender:
+                match = re.search(r'<(.+?)>', sender)
+                sender_email = match.group(1) if match else sender
+
+                if sender_email in ia_list:
+                    skipped_emails[label].append(f"From: {sender_email}, Subject: {subject}")
+                    continue
+
+            deleted_emails[label].append(f"From: {sender_email}, Subject: {subject}")
+            # Uncomment the next line to actually delete the email
+            # service.users().messages().trash(userId='me', id=msg['id']).execute()
+
+    append_to_log_file(labels, before_date, deleted_emails, skipped_emails)
+    return "<h1>✅ Emails processed!</h1><br/><h1>--------------------------------------------------</h1><br/>"
 
 def create_important_address_label(service=build('gmail', 'v1', credentials=creds), user_id='me', label_name="Important address"):
     labels = service.users().labels().list(userId=user_id).execute()
@@ -134,3 +129,26 @@ def get_important_addresses(service=build('gmail', 'v1', credentials=creds), use
     except Exception as e:
         print(f"Error fetching important addresses: {e}")
         return []
+    
+def append_to_log_file(labels, before_date, deleted_emails, skipped_emails):
+    """Appends log details to the log file."""
+    current_date = datetime.now().strftime("%Y-%m-%d")  # Format: YYYY-MM-DD
+    with open(LOG_FILE_PATH, "a", encoding='utf-8') as log_file:
+        log_file.write(f"Date run: {current_date}\n")  # Add current date
+        log_file.write("--------------------------------------------------\n")
+        log_file.write(f"Labels selected:    {labels}\n")
+        log_file.write(f"Before Date:         {before_date}\n\n")
+
+        for label, details in deleted_emails.items():
+            log_file.write(f"--- {label} emails deleted\n")
+            for email in details:
+                log_file.write(f"{email}\n")
+            log_file.write("\n")
+
+        for label, details in skipped_emails.items():
+            log_file.write(f"--- {label} emails skipped\n")
+            for email in details:
+                log_file.write(f"{email}\n")
+            log_file.write("\n")
+
+        log_file.write("--------------------------------------------------\n\n")

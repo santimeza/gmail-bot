@@ -169,3 +169,26 @@ function toggleDateRestriction() {
     beforeDateInput.readOnly = false;
   }
 }
+
+function downloadLog() {
+  // Temporarily disable the beforeunload warning
+  window.removeEventListener("beforeunload", beforeUnloadHandler);
+
+  // Trigger the log download
+  window.location.href = "/download-log";
+
+  // Re-enable the beforeunload warning after a short delay
+  setTimeout(() => {
+    window.addEventListener("beforeunload", beforeUnloadHandler);
+  }, 1000);
+}
+
+// Define the beforeunload handler separately for reuse
+function beforeUnloadHandler(event) {
+  event.preventDefault();
+  event.returnValue =
+    "Are you sure you want to leave? Unsaved changes may be lost. You will lose your log when reloading the page.";
+}
+
+// Attach the beforeunload handler
+window.addEventListener("beforeunload", beforeUnloadHandler);
